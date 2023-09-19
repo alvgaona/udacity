@@ -1,0 +1,11 @@
+# IntelliJ IDEA
+.idea/
+
+# VSCode
+.vscode/
+
+# CMake
+build/
+bin/
+cmake-build-debug/
+lib/
