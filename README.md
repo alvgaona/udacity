@@ -4,8 +4,8 @@ This is a mono repo with a collection of all my solutions to the Udacity courses
 
 ## Table of Content
 
-- [C++ Nanodegree](cpp-nd)
-- [Sensor Fusion Nanodegree](sf-nd)
-- [Robotics Software Engineer Nanodegree](robo-nd)
-- [Deep Learning Nanodegree](dl-nd)
-- [Deep Reinforcement Learning Nanodegree](drl-nd)
+- [C++ Nanodegree](./C++%20Nanodegree/)
+- [Sensor Fusion Nanodegree](./Sensor%20Fusion%20Nanodegree/)
+- [Robotics Software Engineer Nanodegree](./Robotics%20Software%20Engineer%20Nanodegree/)
+- [Deep Learning Nanodegree](./Deep%20Learning%20Nanodegree/)
+- [Deep Reinforcement Learning Nanodegree](./Deep%20Reinforcement%20Learning%20Nanodegree/)
