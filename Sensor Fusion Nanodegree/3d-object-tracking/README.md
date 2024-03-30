@@ -1,18 +1,14 @@
-# 3D Object Tracking
+# SFND 3D Object Tracking
 
-This repository contains the final project for the camera course. It builds upon the knowledge gained from previous lessons on keypoint detectors, descriptors, methods for matching keypoints across images, object detection using YOLO, and associating camera image regions with Lidar data in 3D space. The program schematic illustrates the existing components and the missing parts to be implemented.
+Welcome to the final project of the camera course. By completing all the lessons, you now have a solid understanding of keypoint detectors, descriptors, and methods to match them between successive images. Also, you know how to detect objects in an image using the YOLO deep-learning framework. And finally, you know how to associate regions in a camera image with Lidar points in 3D space. Let's take a look at our program schematic to see what we already have accomplished and what's still missing.
 
 <img src="images/course_code_structure.png" width="779" height="414"  alt="Course Code Structure"/>
 
-The final project comprises four main tasks:
-
-1. Developing a method to match 3D objects over time using keypoint correspondences.
-2. Computing the Time-To-Collision (TTC) based on LiDAR measurements.
-3. Performing the same TTC computation using the camera by associating keypoint matches with regions of interest.
-4. Conducting tests to identify the most suitable detector/descriptor combination for accurate TTC estimation and investigating potential issues with camera or Lidar measurements.
-5. While the Kalman filter technique for combining independent TTC measurements will be covered in the subsequent course, this project focuses on the culminating tasks related to the camera course.
-
-The repository contains the necessary code and resources to complete the project successfully.
+In this final project, you will implement the missing parts in the schematic. To do this, you will complete four major tasks: 
+1. First, you will develop a way to match 3D objects over time by using keypoint correspondences. 
+2. Second, you will compute the TTC based on Lidar measurements. 
+3. You will then proceed to do the same using the camera, which requires to first associate keypoint matches to regions of interest and then to compute the TTC based on those matches. 
+4. And lastly, you will conduct various tests with the framework. Your goal is to identify the most suitable detector/descriptor combination for TTC estimation and also to search for problems that can lead to faulty measurements by the camera or Lidar sensor. In the last course of this Nanodegree, you will learn about the Kalman filter, which is a great way to combine the two independent TTC measurements into an improved version which is much more reliable than a single sensor alone can be. But before we think about such things, let us focus on your final project in the camera course. 
 
 ## Dependencies for Running Locally
 
@@ -36,4 +32,4 @@ The repository contains the necessary code and resources to complete the project
 
 1. Clone this repo.
 2. Build `cd /path/to/3d-object-tracking && make build`
-3. Run it: `./object_tracking`.
+4. Run it: `./object_tracking`.
