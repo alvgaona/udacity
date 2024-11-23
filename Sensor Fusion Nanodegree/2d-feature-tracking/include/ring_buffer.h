@@ -1,5 +1,4 @@
-#ifndef CAMERA_FUSION_RING_BUFFER_H
-#define CAMERA_FUSION_RING_BUFFER_H
+#pragma once
 
 #include <deque>
 
@@ -8,7 +7,7 @@
 template <typename E>
 class RingBuffer : public std::deque<E> {
  public:
-  RingBuffer(int size);
+  explicit RingBuffer(int size);
   ~RingBuffer() = default;
 
   void PushFront(E e);
@@ -24,7 +23,7 @@ RingBuffer<E>::RingBuffer(int size) : size_(size) {}
 template <typename E>
 void RingBuffer<E>::PushFront(E e) {
   this->push_front(e);
-  if (this->size() > size_) {
+  if (static_cast<int>(this->size()) > size_) {
     this->pop_back();
   }
 }
@@ -32,9 +31,7 @@ void RingBuffer<E>::PushFront(E e) {
 template <typename E>
 void RingBuffer<E>::PushBack(E e) {
   this->push_back(e);
-  if (this->size() > size_) {
+  if (static_cast<int>(this->size()) > size_) {
     this->pop_front();
   }
 }
-
-#endif
