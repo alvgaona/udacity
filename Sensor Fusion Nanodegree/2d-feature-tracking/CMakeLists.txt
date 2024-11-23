@@ -13,15 +13,17 @@ endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(OpenCV REQUIRED)
+find_package(rerun_sdk REQUIRED)
 
 file(GLOB SOURCES src/*.cpp)
 
 include_directories(
   include
   ${OpenCV_INCLUDE_DIRS}
+  ${rerun_sdk_INCLUDE_DIRS}
 )
 
-link_libraries(${OpenCV_LIBRARIES})
+link_libraries(${OpenCV_LIBRARIES} rerun_sdk)
 
 file(GLOB_RECURSE src_files src/*.cpp)
 
