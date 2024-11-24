@@ -22,17 +22,10 @@ void MatchDescriptors(
   }
 
   if (selector_type == "SEL_NN") {
-    auto t = static_cast<double>(cv::getTickCount());
     matcher->match(descriptors_src, descriptors_ref, matches);
-    t = (static_cast<double>(cv::getTickCount()) - t) / cv::getTickFrequency();
-    std::cout << "Nearest Neighbor with " << matches.size() << " matches in "
-              << 1000 * t / 1.0 << " ms." << std::endl;
   } else if (selector_type == "SEL_KNN") {
     std::vector<std::vector<cv::DMatch>> knn_matches;
-    auto t = static_cast<double>(cv::getTickCount());
     matcher->knnMatch(descriptors_src, descriptors_ref, knn_matches, 2);
-    std::cout << "K-Nearest Neighbor with " << knn_matches.size()
-              << " matches in " << 1000 * t / 1.0 << " ms" << std::endl;
 
     double min_distance_ratio = 0.8;
     for (auto &knn_match : knn_matches) {
@@ -40,8 +33,6 @@ void MatchDescriptors(
         matches.push_back(knn_match[0]);
       }
     }
-    std::cout << "Matches removed: " << knn_matches.size() - matches.size()
-              << " kpts." << std::endl;
   }
 }
 
@@ -73,15 +64,11 @@ void DescribeKeypoints(
     );
   }
 
-  auto t = static_cast<double>(cv::getTickCount());
   extractor->compute(img, keypoints, descriptors);
-  t = (static_cast<double>(cv::getTickCount()) - t) / cv::getTickFrequency();
-  std::cout << descriptor_type << " descriptor extraction in " << 1000 * t / 1.0
-            << " ms" << std::endl;
 }
 
 void DetectKeypointsShiTomasi(
-  std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool visualize
+  std::vector<cv::KeyPoint> &keypoints, cv::Mat &img
 ) {
   int block_size = 4;
   double max_overlap = 0.0;
@@ -92,7 +79,6 @@ void DetectKeypointsShiTomasi(
   int max_corners =
     static_cast<int>(img.rows * img.cols / std::max(1.0, min_distance));
 
-  auto t = static_cast<double>(cv::getTickCount());
   std::vector<cv::Point2f> corners;
   cv::goodFeaturesToTrack(
     img,
@@ -113,31 +99,9 @@ void DetectKeypointsShiTomasi(
     keypoint.size = static_cast<float>(block_size);
     keypoints.push_back(keypoint);
   }
-  t = (static_cast<double>(cv::getTickCount()) - t) / cv::getTickFrequency();
-  std::cout << "Shi-Tomasi detection with " << keypoints.size()
-            << " keypoints in " << 1000 * t / 1.0 << " ms" << std::endl;
-
-  if (visualize) {
-    cv::Mat visible_image = img.clone();
-    cv::drawKeypoints(
-      img,
-      keypoints,
-      visible_image,
-      cv::Scalar::all(-1),
-      cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS
-    );
-    std::string windowName = "Shi-Tomasi Corner Detector Results";
-    cv::namedWindow(windowName, 6);
-    imshow(windowName, visible_image);
-    cv::waitKey(0);
-  }
 }
 
-void DetectKeypointsHarris(
-  std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool visualize
-) {
-  auto t = static_cast<double>(cv::getTickCount());
-
+void DetectKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img) {
   const int block_size = 4;
   const int aperture_size = 3;
   const double k = 0.04;
@@ -176,16 +140,6 @@ void DetectKeypointsHarris(
       }
     }
   }
-
-  std::cout << "Harris detection with " << keypoints.size() << " keypoints in "
-            << 1000 * t / 1.0 << " ms" << std::endl;
-
-  if (visualize) {
-    std::string window_name = "Harris detector results";
-    cv::namedWindow(window_name);
-    cv::imshow(window_name, dst_norm_scaled);
-    cv::waitKey(0);
-  }
 }
 
 void DetectKeypointsModern(
@@ -214,9 +168,5 @@ void DetectKeypointsModern(
     );
   }
 
-  auto t = static_cast<double>(cv::getTickCount());
   detector->detect(img, keypoints);
-  t = (static_cast<double>(cv::getTickCount()) - t) / cv::getTickFrequency();
-  std::cout << detector_type + " detector with " << keypoints.size()
-            << " keypoints in " << 1000 * t / 1.0 << " ms." << std::endl;
 }

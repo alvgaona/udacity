@@ -17,11 +17,9 @@
 
 #include "data_frame.h"
 
-void DetectKeypointsHarris(
-  std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool visualize = false
-);
+void DetectKeypointsHarris(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img);
 void DetectKeypointsShiTomasi(
-  std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool visualize = false
+  std::vector<cv::KeyPoint> &keypoints, cv::Mat &img
 );
 void DetectKeypointsModern(
   std::vector<cv::KeyPoint> &keypoints,

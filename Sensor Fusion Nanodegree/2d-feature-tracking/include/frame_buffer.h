@@ -5,23 +5,23 @@
 #include "data_frame.h"
 
 template <typename E>
-class RingBuffer : public std::deque<E> {
+class FrameBuffer : public std::deque<E> {
  public:
-  explicit RingBuffer(int size);
-  ~RingBuffer() = default;
+  explicit FrameBuffer(int size);
+  ~FrameBuffer() = default;
 
-  void PushFront(E e);
-  void PushBack(E e);
+  void append(E e);
+  void prepend(E e);
 
  private:
   int size_;
 };
 
 template <typename E>
-RingBuffer<E>::RingBuffer(int size) : size_(size) {}
+FrameBuffer<E>::FrameBuffer(int size) : size_(size) {}
 
 template <typename E>
-void RingBuffer<E>::PushFront(E e) {
+void FrameBuffer<E>::append(E e) {
   this->push_front(e);
   if (static_cast<int>(this->size()) > size_) {
     this->pop_back();
@@ -29,7 +29,7 @@ void RingBuffer<E>::PushFront(E e) {
 }
 
 template <typename E>
-void RingBuffer<E>::PushBack(E e) {
+void FrameBuffer<E>::prepend(E e) {
   this->push_back(e);
   if (static_cast<int>(this->size()) > size_) {
     this->pop_front();
