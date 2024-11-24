@@ -22,6 +22,8 @@ Diagnostics:
       "cppcoreguidelines-prefer-member-initializer",
       "altera-unroll-loops",
       "bugprone-easily-swappable-parameters",
+      "hicpp-uppercase-literal-suffix",
+      "readability-uppercase-literal-suffix"
     ]
 InlayHints:
   BlockEnd: No

@@ -44,14 +44,14 @@ void DescribeKeypoints(
 ) {
   cv::Ptr<cv::DescriptorExtractor> extractor;
   if (descriptor_type == "BRISK") {
-    extractor = cv::BRISK::create(30, 3, 1.0F);
+    extractor = cv::BRISK::create(30, 3, 1.0f);
   } else if (descriptor_type == "BRIEF") {
     extractor = cv::xfeatures2d::BriefDescriptorExtractor::create(32, false);
   } else if (descriptor_type == "ORB") {
     extractor =
       cv::ORB::create(500, 1.2F, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
   } else if (descriptor_type == "FREAK") {
-    extractor = cv::xfeatures2d::FREAK::create(true, true, 22.0F, 4);
+    extractor = cv::xfeatures2d::FREAK::create(true, true, 22.0f, 4);
   } else if (descriptor_type == "AKAZE") {
     extractor = cv::AKAZE::create(
       cv::AKAZE::DESCRIPTOR_MLDB, 0, 3, 0.001F, 4, 4, cv::KAZE::DIFF_PM_G2

@@ -9,6 +9,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <rerun.hpp>
 #include <rerun/archetypes/encoded_image.hpp>
+#include <rerun/archetypes/line_strips2d.hpp>
 #include <rerun/archetypes/points2d.hpp>
 #include <rerun/archetypes/text_log.hpp>
 #include <rerun/recording_stream.hpp>
@@ -30,9 +31,11 @@ int main() {
   std::string matcher_type = "MAT_FLANN";
   std::string selector_type = "SEL_KNN";
 
+  int max_keypoints = 0;
+
   std::vector<fs::path> img_paths;
 
-  const auto rec = rerun::RecordingStream("2d_feature_image");
+  const auto rec = rerun::RecordingStream("feature_tracking");
   rec.spawn().exit_on_failure();
 
   for (const auto& entry :
@@ -57,6 +60,15 @@ int main() {
       DetectKeypointsHarris(keypoints, img);
     } else {
       DetectKeypointsModern(keypoints, img, detector_type);
+    }
+
+    if (max_keypoints > 0) {
+      // there is no response info, so keep the first
+      // 50 as they are sorted in descending quality order
+      if (detector_type == "SHITOMASI") {
+        keypoints.erase(keypoints.begin() + max_keypoints, keypoints.end());
+      }
+      cv::KeyPointsFilter::retainBest(keypoints, max_keypoints);
     }
 
     frame_buffer.begin()->keypoints = keypoints;
@@ -96,148 +108,57 @@ int main() {
           .with_level(rerun::TextLogLevel::Info)
       );
 
+      uint32_t width = prev_frame.image.cols;
+      uint32_t height = prev_frame.image.rows;
+
       std::vector<rerun::Position2D> points_2d_curr(matches.size());
       std::vector<rerun::Position2D> points_2d_prev(matches.size());
+      std::vector<rerun::LineStrip2D> match_edges(matches.size() / 2);
 
-      // Print out matched keypoint pairs
       for (const auto& match : matches) {
         const auto& prev_kp = prev_frame.keypoints[match.trainIdx];
         const auto& curr_kp = curr_frame.keypoints[match.queryIdx];
 
         points_2d_prev.emplace_back(prev_kp.pt.x, prev_kp.pt.y);
-        points_2d_curr.emplace_back(curr_kp.pt.x, curr_kp.pt.y);
+        points_2d_curr.emplace_back(
+          curr_kp.pt.x + static_cast<float>(width), curr_kp.pt.y
+        );
+        match_edges.push_back(rerun::LineStrip2D({
+          rerun::Position2D(prev_kp.pt.x, prev_kp.pt.y),
+          rerun::Position2D(
+            curr_kp.pt.x + static_cast<float>(width), curr_kp.pt.y
+          ),
+        }));
       }
 
-      uint32_t width = prev_frame.image.cols;
-      uint32_t height = prev_frame.image.rows;
+      cv::Mat concat_image;
+      cv::hconcat(
+        frame_buffer.begin()->image,
+        (frame_buffer.begin() + 1)->image,
+        concat_image
+      );
+      rec.log(
+        "matches/image",
+        rerun::Image::from_greyscale8(concat_image, {width * 2, height})
+      );
 
-      rec.log("image", rerun::Image::from_greyscale8(img, {width, height}));
+      rec.log(
+        "matches/image/prev/keypoints",
+        rerun::Points2D(points_2d_prev).with_colors(rerun::Color(255, 0, 0))
+      );
+      rec.log(
+        "matches/image/curr/keypoints",
+        rerun::Points2D(points_2d_curr).with_colors(rerun::Color(0, 0, 255))
+      );
 
-      // rec.log(
-      //   "prev/image",
-      //   rerun::Image::from_greyscale8(prev_frame.image, {width, height})
-      // );
-
-      // rec.log(
-      //   "curr/image",
-      //   rerun::Image::from_greyscale8(curr_frame.image, {width, height})
-      // );
-
-      // rec.log(
-      //   "prev/keypoints",
-      //   rerun::Points2D(points_2d_prev).with_colors(rerun::Color(0, 0, 255))
-      // );
-      // rec.log(
-      //   "curr/keypoints",
-      //   rerun::Points2D(points_2d_curr).with_colors(rerun::Color(0, 255, 0))
-      // );
-
-      // cv::Mat concat_image;
-      // cv::hconcat(
-      //   frame_buffer.begin()->image,
-      //   (frame_buffer.begin() + 1)->image,
-      //   concat_image
-      // );
-      // rec.log(
-      //   "matches",
-      //   rerun::Image::from_greyscale8(concat_image, {width * 2, height})
-      // );
+      rec.log(
+        "matches/image/edges",
+        rerun::LineStrips2D(match_edges)
+          .with_radii(0.1f)
+          .with_colors(rerun::Color(153, 50, 204))
+      );
     }
   }
-
-  //   // TODO: Read focus_on_vehicle value from a file.
-  //   //    This is a configuration parameter.
-  //   cv::Rect vehicle_frame(535, 180, 180, 150);
-  //   if (focus_on_vehicle) {
-  //     keypoints.erase(
-  //       std::remove_if(
-  //         keypoints.begin(),
-  //         keypoints.end(),
-  //         [&vehicle_frame](const cv::KeyPoint& kp) {
-  //           return !vehicle_frame.contains(kp.pt);
-  //         }
-  //       ),
-  //       keypoints.end()
-  //     );
-  //   }
-
-  //   // TODO: Same with limit_keypoints.
-  //   if (limit_keypoints) {
-  //     int max_keypoints = 50;
-
-  //     if (detector_type ==
-  //         "SHITOMASI") {  // there is no response info, so keep the first
-  //                         // 50 as they are sorted in descending quality
-  //                         order
-  //       keypoints.erase(keypoints.begin() + max_keypoints,
-  //       keypoints.end());
-  //     }
-  //     cv::KeyPointsFilter::retainBest(keypoints, max_keypoints);
-  //     std::cout << " NOTE: Keypoints have been limited!" << std::endl;
-  //   }
-
-  //   ring_buffer.begin()->keypoints = keypoints;
-
-  //   total_keypoints += static_cast<int>(keypoints.size());
-
-  //   std::cout << "Extracting keypoint descriptors" << std::endl;
-
-  //   cv::Mat descriptors;
-  //   // TODO: Move this function to a factory.
-  //   DescribeKeypoints(
-  //     ring_buffer.begin()->keypoints,
-  //     ring_buffer.begin()->image,
-  //     descriptors,
-  //     descriptor_type
-  //   );
-
-  //   // push descriptors for current frame to end of data buffer
-  //   ring_buffer.begin()->descriptors = descriptors;
-
-  //   if (ring_buffer.size() > 1) {
-  //     std::cout << "Matching keypoint descriptors" << std::endl;
-
-  //     // TODO: Encapsulate matching procedure in a custom Matcher class.
-  //     std::vector<cv::DMatch> matches;
-  //     MatchDescriptors(
-  //       (ring_buffer.begin() + 1)->descriptors,
-  //       ring_buffer.begin()->descriptors,
-  //       matches,
-  //       matcher_type,
-  //       selector_type
-  //     );
-
-  //     total_matches += static_cast<int>(matches.size());
-
-  //     ring_buffer.begin()->keypoints_matches = matches;
-
-  //     if (visualize_matches) {
-  //       cv::Mat match_img = (ring_buffer.begin()->image).clone();
-  //       cv::drawMatches(
-  //         (ring_buffer.begin() + 1)->image,
-  //         (ring_buffer.begin() + 1)->keypoints,
-  //         ring_buffer.begin()->image,
-  //         ring_buffer.begin()->keypoints,
-  //         matches,
-  //         match_img,
-  //         cv::Scalar::all(-1),
-  //         cv::Scalar::all(-1),
-  //         std::vector<char>(),
-  //         cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS
-  //       );
-
-  //       std::string window_name =
-  //         "Matching keypoints between two camera images";
-  //       cv::namedWindow(window_name, 7);
-  //       cv::imshow(window_name, match_img);
-  //       std::cout << "Press key to continue to next image" << std::endl;
-  //       cv::waitKey(0);  // wait for key to be pressed
-  //     }
-  //   }
-  // }
-
-  // std::cout << "Total keypoints: " << total_keypoints << std::endl;
-  // std::cout << "Total matches: " << total_matches << std::endl;
 
   return 0;
 }
